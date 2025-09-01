@@ -7,14 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         setLogLevel('debug');
 
-        const __app_id = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
-        const __firebase_config = typeof window.__firebase_config !== 'undefined' ? JSON.parse(window.__firebase_config) : {};
-        const __initial_auth_token = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : undefined;
+        // Sua configuração do Firebase. 
+        // Esta chave é específica do seu projeto e permite que o app se conecte ao seu banco de dados.
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDUqZxhMh0ar-KQPQfajpS2Mwov9nSWc",
+            authDomain: "calendario-fit-lisa.firebaseapp.com",
+            projectId: "calendario-fit-lisa",
+            storageBucket: "calendario-fit-lisa.appspot.com",
+            messagingSenderId: "838752415118",
+            appId: "1:838752415118:web:b9153b9b90922cd75c8df",
+            measurementId: "G-NH2BM685V5"
+        };
+        const appId = firebaseConfig.appId;
 
         let db, auth;
         let userId;
@@ -33,7 +42,7 @@
         let trainingLog = {};
 
         document.addEventListener("DOMContentLoaded", () => {
-            const app = initializeApp(__firebase_config);
+            const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
             
@@ -45,11 +54,7 @@
                     setupFirestoreListener();
                 } else {
                     try {
-                        if (__initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
+                        await signInAnonymously(auth);
                     } catch (error) {
                         console.error("Falha na autenticação:", error);
                         document.getElementById('message-box').innerHTML = 'Falha na autenticação. Por favor, recarregue a página.';
@@ -92,7 +97,7 @@
                 console.error("User ID is not defined.");
                 return;
             }
-            const logCollection = collection(db, `artifacts/${__app_id}/users/${userId}/training_log`);
+            const logCollection = collection(db, `artifacts/${appId}/users/${userId}/training_log`);
             onSnapshot(logCollection, (snapshot) => {
                 trainingLog = {};
                 snapshot.forEach(doc => {
@@ -199,7 +204,7 @@
 
         async function toggleDoneStatus(dateString) {
             const isDone = trainingLog[dateString]?.done || false;
-            const logDocRef = doc(db, `artifacts/${__app_id}/users/${userId}/training_log`, dateString);
+            const logDocRef = doc(db, `artifacts/${appId}/users/${userId}/training_log`, dateString);
             
             try {
                 await setDoc(logDocRef, { done: !isDone }, { merge: true });

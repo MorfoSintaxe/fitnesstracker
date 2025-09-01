@@ -46,20 +46,20 @@
             db = getFirestore(app);
             auth = getAuth(app);
             
-            onAuthStateChanged(auth, async (user) => {
+            // Alteração na lógica de autenticação para evitar o problema
+            if (auth.currentUser === null) {
+                signInAnonymously(auth).catch((error) => {
+                    console.error("Falha na autenticação:", error);
+                    showMessageBox('Falha na autenticação. Por favor, recarregue a página.');
+                });
+            }
+
+            onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userId = user.uid;
                     document.getElementById('user-id').textContent = `ID do Usuário: ${userId}`;
                     renderCalendar();
                     setupFirestoreListener();
-                } else {
-                    try {
-                        await signInAnonymously(auth);
-                    } catch (error) {
-                        console.error("Falha na autenticação:", error);
-                        document.getElementById('message-box').innerHTML = 'Falha na autenticação. Por favor, recarregue a página.';
-                        document.getElementById('message-box').classList.remove('hidden');
-                    }
                 }
             });
 
